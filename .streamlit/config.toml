@@ -1,0 +1,8 @@
+[client]
+showErrorDetails = false
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false

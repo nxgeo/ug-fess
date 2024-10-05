@@ -1,0 +1,8 @@
+beautifulsoup4
+dj-database-url
+Django
+emoji
+psycopg[binary]
+python-twitter-v2
+requests
+streamlit
