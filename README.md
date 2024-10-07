@@ -2,7 +2,7 @@
 
 # UG FESS Web App
 
-Welcome to the codebase of the UG FESS web app. This app powers the @ug_fess menfess bot on X, providing UG students with a platform for sending anonymous messages.
+Welcome to the codebase of the UG FESS web app. This app powers the [@ug_fess](https://x.com/ug_fess) menfess bot on X, providing UG students with a platform for sending anonymous messages.
 
 ## Built With
 
@@ -13,4 +13,4 @@ Welcome to the codebase of the UG FESS web app. This app powers the @ug_fess men
 
 ## Deployment
 
-The app is deployed on **Heroku Dynos** with **Heroku Postgres** as the database service. It is configured to automatically deploy changes from the **main branch** of this repository.
+The app is deployed on **Heroku Dynos** with **Heroku Postgres** as its database. It is configured to automatically deploy changes from the **main branch** of this repository.
