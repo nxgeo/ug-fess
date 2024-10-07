@@ -1,5 +1,6 @@
 [client]
 showErrorDetails = false
+toolbarMode = "minimal"
 
 [server]
 headless = true
