@@ -65,7 +65,7 @@ def sign_out():
 
 
 def sign_in_form():
-    st.header("Eitss, sign in dulu!")
+    st.header("Eitss, sign in dulu!", anchor=False)
     st.write(
         "Sign in pake kredensial Student Site ya! Buat verifikasi kalo lo emang anak Gundar."
     )
@@ -82,7 +82,7 @@ def sign_in_form():
 
 
 def main_page():
-    st.header("Mau kirim menfess apa?")
+    st.header("Mau kirim menfess apa?", anchor=False)
     status_placeholder = st.empty()
     text = st.text_area("Ketikin menfess lo di sini:")
 
