@@ -86,10 +86,14 @@ def sign_in_form():
 def main_page():
     st.header("Mau kirim menfess apa?", anchor=False)
     status_placeholder = st.empty()
-    text = st.text_area("Ketikin menfess lo di sini:")
+    menfess_submission_form = st.form(
+        "menfess_submission_form", clear_on_submit=True, enter_to_submit=False
+    )
+    text = menfess_submission_form.text_area("Ketikin menfess lo di sini:")
 
-    if st.button("Submit", disabled=(not text)):
-        tweet_menfess(text, status_placeholder)
+    if menfess_submission_form.form_submit_button():
+        if text:
+            tweet_menfess(text, status_placeholder)
 
     st.divider()
 
