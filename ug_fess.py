@@ -2,6 +2,7 @@ from os import environ
 
 from django import setup
 import streamlit as st
+from streamlit.delta_generator import DeltaGenerator
 
 from auth import authenticate
 from x import create_tweet, is_valid_tweet
@@ -17,7 +18,7 @@ from db.models import Menfess, User
 X_STATUS_BASE_URL = "https://x.com/ug_fess/status/"
 
 
-def sign_in(username, password, error_placeholder):
+def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
     try:
         if authenticate(username, password):
             st.session_state.user = User.objects.get_or_create(username=username)[0]
