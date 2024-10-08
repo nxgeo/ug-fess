@@ -78,8 +78,9 @@ def sign_in_form():
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-    if st.button("Sign in", disabled=(not username or not password)):
-        sign_in(username, password, error_placeholder)
+    if st.button("Sign in"):
+        if username and password:
+            sign_in(username, password, error_placeholder)
 
 
 def main_page():
