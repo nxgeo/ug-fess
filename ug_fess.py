@@ -1,3 +1,8 @@
+import sys
+
+sys.dont_write_bytecode = True
+
+
 from os import environ
 
 from django import setup
