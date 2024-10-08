@@ -93,7 +93,7 @@ def main_page():
 
     st.divider()
 
-    st.subheader("Mau sign out?")
+    st.subheader("Mau sign out?", anchor=False)
     st.write(
         "Kalo lo mau sign out, tinggal refresh (CTRL + R) aja atau klik button :point_down:"
     )
