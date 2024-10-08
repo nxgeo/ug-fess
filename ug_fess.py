@@ -1,6 +1,8 @@
 from os import environ
 
 from django import setup
+from django.apps import apps
+from django.conf import settings
 import streamlit as st
 from streamlit.components.v1 import html
 from streamlit.delta_generator import DeltaGenerator
@@ -9,8 +11,9 @@ from auth import authenticate
 from x import create_tweet, get_tweet_oembed_html, is_valid_tweet
 
 
-environ.setdefault("DJANGO_SETTINGS_MODULE", "django_settings")
-setup()
+if not settings.configured and not apps.ready:
+    environ.setdefault("DJANGO_SETTINGS_MODULE", "django_settings")
+    setup()
 
 
 from db.models import Menfess, User
