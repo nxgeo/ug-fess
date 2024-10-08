@@ -90,15 +90,6 @@ def split_tweet(text: str) -> list[str]:
     return parts
 
 
-def create_tweet(text: str) -> Tweet | list[Tweet]:
-    weighted_tweet_length = calculate_weighted_tweet_length(text)
-
-    if weighted_tweet_length <= MAX_WEIGHTED_TWEET_LENGTH:
-        return x_api.create_tweet(text=text)
-    else:
-        return create_thread(text)
-
-
 def create_thread(text: str) -> list[Tweet]:
     texts = split_tweet(text)
     tweets = []
@@ -112,3 +103,12 @@ def create_thread(text: str) -> list[Tweet]:
         in_reply_to_tweet_id = tweet.id
 
     return tweets
+
+
+def create_tweet(text: str) -> Tweet | list[Tweet]:
+    weighted_tweet_length = calculate_weighted_tweet_length(text)
+
+    if weighted_tweet_length <= MAX_WEIGHTED_TWEET_LENGTH:
+        return x_api.create_tweet(text=text)
+    else:
+        return create_thread(text)
