@@ -4,6 +4,7 @@ from unicodedata import normalize
 from emoji import analyze, EmojiMatch
 from pytwitter import Api
 from pytwitter.models import Tweet
+from requests import get
 
 
 MAX_WEIGHTED_TWEET_LENGTH = 280
@@ -112,3 +113,28 @@ def create_tweet(text: str) -> Tweet | list[Tweet]:
         return x_api.create_tweet(text=text)
     else:
         return create_thread(text)
+
+
+OEMBED_RESOURCE_URL = "https://publish.twitter.com/oembed"
+
+STATUS_BASE_URL = "https://x.com/ug_fess/status/"
+
+
+def get_tweet_oembed_html(tweet_id: str) -> str:
+    tweet_url = STATUS_BASE_URL + tweet_id
+
+    params = {
+        "url": tweet_url,
+        "hide_media": "true",
+        "hide_thread": "true",
+        "align": "center",
+        "theme": "dark",
+        "dnt": "true",
+    }
+
+    try:
+        response = get(OEMBED_RESOURCE_URL, params)
+    except Exception:
+        return ""
+
+    return response.json().get("html", "")

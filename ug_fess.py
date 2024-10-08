@@ -2,10 +2,11 @@ from os import environ
 
 from django import setup
 import streamlit as st
+from streamlit.components.v1 import html
 from streamlit.delta_generator import DeltaGenerator
 
 from auth import authenticate
-from x import create_tweet, is_valid_tweet
+from x import create_tweet, get_tweet_oembed_html, is_valid_tweet
 
 
 environ.setdefault("DJANGO_SETTINGS_MODULE", "django_settings")
@@ -15,7 +16,17 @@ setup()
 from db.models import Menfess, User
 
 
-X_STATUS_BASE_URL = "https://x.com/ug_fess/status/"
+@st.dialog("Status")
+def show_menfess_creation_status(
+    status_type: str, message: str, tweet_id: str | None = None
+) -> None:
+    if status_type == "success":
+        st.success(message)
+
+        if tweet_id:
+            html(get_tweet_oembed_html(tweet_id), height=390, scrolling=True)
+    elif status_type == "error":
+        st.error(message)
 
 
 def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
@@ -34,9 +45,11 @@ def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
         )
 
 
-def tweet_menfess(text, status_placeholder):
+def tweet_menfess(text):
     if not is_valid_tweet(text):
-        status_placeholder.error("Menfess-nya ga boleh ada #, @, atau URL ya!")
+        show_menfess_creation_status(
+            "error", "Menfess-nya ga boleh ada #, @, atau URL ya!"
+        )
         return
 
     try:
@@ -49,13 +62,13 @@ def tweet_menfess(text, status_placeholder):
 
         Menfess.objects.create(tweet_id=tweet.id, user=st.session_state.user)
 
-        status_placeholder.success(
-            "Yay :smiley:! Menfess lo udah di-tweet. "
-            f"Cek di [sini]({X_STATUS_BASE_URL}{tweet.id})."
+        show_menfess_creation_status(
+            "success", "Yay! Menfess lo udah di-tweet :smiley:", tweet.id
         )
     except Exception:
-        status_placeholder.error(
-            "Lagi ga bisa kirim menfess nih :disappointed:. Coba lagi nanti ya!"
+        show_menfess_creation_status(
+            "error",
+            "Lagi ga bisa kirim menfess nih :disappointed:. Coba lagi nanti ya!",
         )
 
 
@@ -85,7 +98,6 @@ def sign_in_form():
 
 def main_page():
     st.header("Mau kirim menfess apa?", anchor=False)
-    status_placeholder = st.empty()
     menfess_submission_form = st.form(
         "menfess_submission_form", clear_on_submit=True, enter_to_submit=False
     )
@@ -93,7 +105,7 @@ def main_page():
 
     if menfess_submission_form.form_submit_button():
         if text:
-            tweet_menfess(text, status_placeholder)
+            tweet_menfess(text)
 
     st.divider()
 
