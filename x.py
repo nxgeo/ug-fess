@@ -132,9 +132,12 @@ def get_tweet_oembed_html(tweet_id: str) -> str:
         "dnt": "true",
     }
 
+    headers = {"Accept": "application/json"}
+
     try:
-        response = get(OEMBED_RESOURCE_URL, params)
+        response = get(OEMBED_RESOURCE_URL, params, headers=headers)
+        oembed_data = response.json()
     except Exception:
         return ""
 
-    return response.json().get("html", "")
+    return oembed_data.get("html", "")
