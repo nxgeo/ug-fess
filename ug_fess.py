@@ -16,7 +16,7 @@ from auth import authenticate
 from x import create_tweet, get_tweet_oembed_html, is_valid_tweet
 
 
-if not settings.configured and not apps.ready:
+if not settings.configured or not apps.ready:
     environ.setdefault("DJANGO_SETTINGS_MODULE", "django_settings")
     setup()
 
