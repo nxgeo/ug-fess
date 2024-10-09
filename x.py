@@ -1,10 +1,12 @@
 from os import environ
+from time import sleep
 from unicodedata import normalize
 
 from emoji import analyze, EmojiMatch
 from pytwitter import Api
 from pytwitter.models import Tweet
 from requests import get
+from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 
 MAX_WEIGHTED_TWEET_LENGTH = 280
@@ -91,28 +93,71 @@ def split_tweet(text: str) -> list[str]:
     return parts
 
 
-def create_thread(text: str) -> list[Tweet]:
+CHUNK_SIZE_IN_BYTES = 1024 * 1024 // 2
+
+
+def upload_images(images: list[UploadedFile]) -> list[str]:
+    media_ids = []
+
+    for image in images:
+        media_id = x_api.upload_media_chunked_init(
+            image.size, image.type, "tweet_image"
+        ).media_id_string
+
+        segment_index = 0
+        while chunk := image.read(CHUNK_SIZE_IN_BYTES):
+            x_api.upload_media_chunked_append(media_id, segment_index, chunk)
+            segment_index += 1
+
+        processing_info = x_api.upload_media_chunked_finalize(media_id).processing_info
+
+        if processing_info:
+            while processing_info.state != "succeeded":
+                sleep(processing_info.check_after_secs)
+
+                processing_info = x_api.upload_media_chunked_status(
+                    media_id
+                ).processing_info
+
+                if processing_info.state == "failed":
+                    raise Exception("Image upload failed")
+
+        media_ids.append(media_id)
+
+    return media_ids
+
+
+def create_thread(
+    text: str | None = None, media_ids: list[str] | None = None
+) -> list[Tweet]:
     texts = split_tweet(text)
     tweets = []
     in_reply_to_tweet_id = None
 
     for text in texts:
         tweet = x_api.create_tweet(
-            text=text, reply_in_reply_to_tweet_id=in_reply_to_tweet_id
+            text=text,
+            media_media_ids=media_ids,
+            reply_in_reply_to_tweet_id=in_reply_to_tweet_id,
         )
         tweets.append(tweet)
         in_reply_to_tweet_id = tweet.id
 
+        if media_ids:
+            media_ids = None
+
     return tweets
 
 
-def create_tweet(text: str) -> Tweet | list[Tweet]:
+def create_tweet(
+    text: str | None = None, media_ids: list[str] | None = None
+) -> Tweet | list[Tweet]:
     weighted_tweet_length = calculate_weighted_tweet_length(text)
 
     if weighted_tweet_length <= MAX_WEIGHTED_TWEET_LENGTH:
-        return x_api.create_tweet(text=text)
+        return x_api.create_tweet(text=text, media_media_ids=media_ids)
     else:
-        return create_thread(text)
+        return create_thread(text, media_ids)
 
 
 OEMBED_RESOURCE_URL = "https://publish.twitter.com/oembed"

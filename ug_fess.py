@@ -11,9 +11,10 @@ from django.conf import settings
 import streamlit as st
 from streamlit.components.v1 import html
 from streamlit.delta_generator import DeltaGenerator
+from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from auth import authenticate
-from x import create_tweet, get_tweet_oembed_html, is_valid_tweet
+from x import create_tweet, get_tweet_oembed_html, is_valid_tweet, upload_images
 
 
 if not settings.configured or not apps.ready:
@@ -22,6 +23,9 @@ if not settings.configured or not apps.ready:
 
 
 from db.models import Menfess, User
+
+
+X_MAX_IMAGE_ATTACHMENTS = 4
 
 
 @st.dialog("Status")
@@ -53,15 +57,26 @@ def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
         )
 
 
-def tweet_menfess(text):
-    if not is_valid_tweet(text):
+def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
+    if text and not is_valid_tweet(text):
         show_menfess_creation_status(
             "error", "Menfess-nya ga boleh ada #, @, atau URL ya!"
         )
         return
 
     try:
-        tweet_or_tweets = create_tweet(text)
+        if images:
+            if len(images) > X_MAX_IMAGE_ATTACHMENTS:
+                show_menfess_creation_status(
+                    "error", f"Max {X_MAX_IMAGE_ATTACHMENTS} images aja ya!"
+                )
+                return
+
+            media_ids = upload_images(images)
+        else:
+            media_ids = None
+
+        tweet_or_tweets = create_tweet(text, media_ids)
 
         if isinstance(tweet_or_tweets, list):
             tweet = tweet_or_tweets[0]
@@ -110,10 +125,15 @@ def main_page():
         "menfess_submission_form", clear_on_submit=True, enter_to_submit=False
     )
     text = menfess_submission_form.text_area("Ketikin menfess lo di sini:")
+    images = menfess_submission_form.file_uploader(
+        f"Lo juga bisa upload images (max {X_MAX_IMAGE_ATTACHMENTS}):",
+        type=["jpg", "jpeg", "png"],
+        accept_multiple_files=True,
+    )
 
     if menfess_submission_form.form_submit_button():
-        if text:
-            tweet_menfess(text)
+        if text or images:
+            tweet_menfess(text, images)
 
     st.divider()
 
