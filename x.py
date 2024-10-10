@@ -104,6 +104,8 @@ def upload_images(images: list[UploadedFile]) -> list[str]:
             image.size, image.type, "tweet_image"
         ).media_id_string
 
+        image.seek(0)
+
         segment_index = 0
         while chunk := image.read(CHUNK_SIZE_IN_BYTES):
             x_api.upload_media_chunked_append(media_id, segment_index, chunk)

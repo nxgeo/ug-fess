@@ -13,6 +13,8 @@ def has_inappropriate_image(images: list[UploadedFile]) -> bool:
     )
 
     for image in images:
+        image.seek(0)
+
         result = azureaivision_client.analyze_image_in_stream(
             image, [VisualFeatureTypes.adult]
         ).adult
