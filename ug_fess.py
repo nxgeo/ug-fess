@@ -14,6 +14,7 @@ from streamlit.delta_generator import DeltaGenerator
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from auth import authenticate
+from content_moderation import has_inappropriate_image
 from x import create_tweet, get_tweet_oembed_html, is_valid_tweet, upload_images
 
 
@@ -69,6 +70,12 @@ def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
             if len(images) > X_MAX_IMAGE_ATTACHMENTS:
                 show_menfess_creation_status(
                     "error", f"Max {X_MAX_IMAGE_ATTACHMENTS} images aja ya!"
+                )
+                return
+
+            if has_inappropriate_image(images):
+                show_menfess_creation_status(
+                    "error", "Ga boleh ada adult, racy, atau gory images ya!"
                 )
                 return
 
