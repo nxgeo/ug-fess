@@ -19,10 +19,6 @@ x_api = Api(
 )
 
 
-def is_valid_tweet(text: str) -> bool:
-    return "#" not in text and "@" not in text and "http" not in text
-
-
 def get_character_weight(char: str | EmojiMatch) -> int:
     if isinstance(char, EmojiMatch):
         return 2

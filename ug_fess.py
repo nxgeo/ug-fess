@@ -14,8 +14,8 @@ from streamlit.delta_generator import DeltaGenerator
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from auth import authenticate
-from content_moderation import has_inappropriate_image
-from x import create_tweet, get_tweet_oembed_html, is_valid_tweet, upload_images
+from content_moderation import has_disallowed_entities, has_inappropriate_image
+from x import create_tweet, get_tweet_oembed_html, upload_images
 
 
 if not settings.configured or not apps.ready:
@@ -59,7 +59,7 @@ def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
 
 
 def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
-    if text and not is_valid_tweet(text):
+    if text and has_disallowed_entities(text):
         show_menfess_creation_status(
             "error", "Menfess-nya ga boleh ada #, @, atau URL ya!"
         )
