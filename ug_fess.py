@@ -14,7 +14,11 @@ from streamlit.delta_generator import DeltaGenerator
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from auth import authenticate
-from content_moderation import has_disallowed_entities, has_inappropriate_image
+from content_moderation import (
+    has_disallowed_entities,
+    has_inappropriate_content,
+    has_inappropriate_image,
+)
 from x import create_tweet, get_tweet_oembed_html, upload_images
 
 
@@ -59,13 +63,21 @@ def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
 
 
 def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
-    if text and has_disallowed_entities(text):
-        show_menfess_creation_status(
-            "error", "Menfess-nya ga boleh ada #, @, atau URL ya!"
-        )
-        return
-
     try:
+        if text:
+            if has_disallowed_entities(text):
+                show_menfess_creation_status(
+                    "error", "Menfess-nya ga boleh ada #, @, atau URL ya!"
+                )
+                return
+
+            if has_inappropriate_content(text):
+                show_menfess_creation_status(
+                    "error",
+                    "Menfess-nya ga boleh ada konten yang inappropriate ya! Baca lagi rules-nya.",
+                )
+                return
+
         if images:
             if len(images) > X_MAX_IMAGE_ATTACHMENTS:
                 show_menfess_creation_status(
