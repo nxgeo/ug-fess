@@ -30,6 +30,8 @@ if not settings.configured or not apps.ready:
 from db.models import Menfess, User
 
 
+MENFESS_SIGNATURE = "yuji!"
+
 X_MAX_IMAGE_ATTACHMENTS = 4
 
 
@@ -77,6 +79,9 @@ def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
                     "Menfess-nya ga boleh ada konten yang inappropriate ya! Baca lagi rules-nya.",
                 )
                 return
+
+            if MENFESS_SIGNATURE not in text:
+                text = f"{MENFESS_SIGNATURE} {text}"
 
         if images:
             if len(images) > X_MAX_IMAGE_ATTACHMENTS:
