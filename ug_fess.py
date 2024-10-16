@@ -80,7 +80,7 @@ def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
                 )
                 return
 
-            if MENFESS_SIGNATURE not in text:
+            if MENFESS_SIGNATURE not in text.lower():
                 text = f"{MENFESS_SIGNATURE} {text}"
 
         if images:
