@@ -58,7 +58,7 @@ MAX_WEIGHTED_TWEET_LENGTH_WITHOUT_SUFFIX = (
 SPACE_WEIGHT = get_character_weight(" ")
 
 
-def split_tweet(text: str) -> list[str]:
+def threadify_tweet(text: str) -> list[str]:
     parts = []
     part = ""
     weighted_part_length = 0
@@ -128,7 +128,7 @@ def upload_images(images: list[UploadedFile]) -> list[str]:
 def create_thread(
     text: str | None = None, media_ids: list[str] | None = None
 ) -> list[Tweet]:
-    texts = split_tweet(text)
+    texts = threadify_tweet(text)
     tweets = []
     in_reply_to_tweet_id = None
 
