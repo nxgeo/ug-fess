@@ -80,8 +80,15 @@ def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
                 )
                 return
 
-            if MENFESS_SIGNATURE not in text.lower():
-                text = f"{MENFESS_SIGNATURE} {text}"
+            if MENFESS_SIGNATURE in text.lower():
+                show_menfess_creation_status(
+                    "error",
+                    f"Menfess-nya jangan ada reserved keyword ***{MENFESS_SIGNATURE}*** ya! Biar sistem aja yang "
+                    f"nambahin ***{MENFESS_SIGNATURE}***-nya.",
+                )
+                return
+
+            text = f"{MENFESS_SIGNATURE} {text}"
 
         if images:
             if len(images) > X_MAX_IMAGE_ATTACHMENTS:
