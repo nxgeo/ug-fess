@@ -67,6 +67,14 @@ def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
 def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
     try:
         if text:
+            if MENFESS_SIGNATURE in text.lower():
+                show_menfess_creation_status(
+                    "error",
+                    f"Menfess-nya jangan ada reserved keyword ***{MENFESS_SIGNATURE}*** ya! Biar sistem aja yang "
+                    f"nambahin ***{MENFESS_SIGNATURE}***-nya.",
+                )
+                return
+
             if has_disallowed_entities(text):
                 show_menfess_creation_status(
                     "error", "Menfess-nya ga boleh ada #, @, atau URL ya!"
@@ -77,14 +85,6 @@ def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
                 show_menfess_creation_status(
                     "error",
                     "Menfess-nya ga boleh ada konten yang inappropriate ya! Baca lagi rules-nya.",
-                )
-                return
-
-            if MENFESS_SIGNATURE in text.lower():
-                show_menfess_creation_status(
-                    "error",
-                    f"Menfess-nya jangan ada reserved keyword ***{MENFESS_SIGNATURE}*** ya! Biar sistem aja yang "
-                    f"nambahin ***{MENFESS_SIGNATURE}***-nya.",
                 )
                 return
 
