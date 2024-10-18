@@ -51,7 +51,8 @@ def show_menfess_creation_status(
 def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
     try:
         if authenticate(username, password):
-            st.session_state.user = User.objects.get_or_create(username=username)[0]
+            user = User.objects.get_or_create(username=username)[0]
+            st.session_state.user_id = user.user_id
             st.session_state.is_authenticated = True
             st.rerun()
         else:
@@ -114,7 +115,7 @@ def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
         else:
             tweet = tweet_or_tweets
 
-        Menfess.objects.create(tweet_id=tweet.id, user=st.session_state.user)
+        Menfess.objects.create(tweet_id=tweet.id, user_id=st.session_state.user_id)
 
         show_menfess_creation_status(
             "success", "Yay! Menfess lo udah di-tweet :smiley:", tweet.id
@@ -127,7 +128,7 @@ def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
 
 
 def sign_out():
-    del st.session_state["user"]
+    del st.session_state["user_id"]
     st.session_state.is_authenticated = False
     st.rerun()
 
