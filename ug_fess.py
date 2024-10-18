@@ -8,6 +8,7 @@ from os import environ
 from django import setup
 from django.apps import apps
 from django.conf import settings
+from django.utils import timezone
 import streamlit as st
 from streamlit.components.v1 import html
 from streamlit.delta_generator import DeltaGenerator
@@ -30,6 +31,8 @@ if not settings.configured or not apps.ready:
 from db.models import Menfess, User
 
 
+MAX_MENFESS_PER_USER_PER_DAY = 3
+
 MENFESS_SIGNATURE = "yuji!"
 
 X_MAX_IMAGE_ATTACHMENTS = 4
@@ -46,6 +49,14 @@ def show_menfess_creation_status(
             html(get_tweet_oembed_html(tweet_id), height=390, scrolling=True)
     elif status_type == "error":
         st.error(message)
+
+
+def can_create_menfess_today(user_id) -> bool:
+    today = timezone.localdate()
+    today_menfess_count = Menfess.objects.filter(
+        user_id=user_id, created_at__date=today
+    ).count()
+    return today_menfess_count < MAX_MENFESS_PER_USER_PER_DAY
 
 
 def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
@@ -67,6 +78,14 @@ def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
 
 def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
     try:
+        if not can_create_menfess_today(st.session_state.user_id):
+            show_menfess_creation_status(
+                "error",
+                f"Yah, udah nyentuh limit kirim menfess hari ini. Max {MAX_MENFESS_PER_USER_PER_DAY} menfess aja ya "
+                "per hari. Coba lagi besok :smiley:",
+            )
+            return
+
         if text:
             if MENFESS_SIGNATURE in text.lower():
                 show_menfess_creation_status(

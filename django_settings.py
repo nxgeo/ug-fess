@@ -13,4 +13,6 @@ DATABASES = {
     )
 }
 
+TIME_ZONE = "Asia/Jakarta"
+
 DEFAULT_AUTO_FIELD = "django.db.models.SmallAutoField"
