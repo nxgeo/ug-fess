@@ -63,6 +63,13 @@ def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
     try:
         if authenticate(username, password):
             user = User.objects.get_or_create(username=username)[0]
+
+            if user.is_banned:
+                error_placeholder.error(
+                    "Sorry, lo di-ban dari UG FESS karena ngelanggar rules!"
+                )
+                return
+
             st.session_state.user_id = user.user_id
             st.session_state.is_authenticated = True
             st.rerun()
