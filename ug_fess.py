@@ -3,12 +3,13 @@ import sys
 sys.dont_write_bytecode = True
 
 
-from os import environ
+import os
 
-from django import setup
+import django
 from django.apps import apps
 from django.conf import settings
 from django.utils import timezone
+import filetype
 import streamlit as st
 from streamlit.components.v1 import html
 from streamlit.delta_generator import DeltaGenerator
@@ -24,8 +25,8 @@ from x import create_tweet, get_tweet_oembed_html, upload_images
 
 
 if not settings.configured or not apps.ready:
-    environ.setdefault("DJANGO_SETTINGS_MODULE", "django_settings")
-    setup()
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_settings")
+    django.setup()
 
 
 from db.models import Menfess, User
@@ -36,6 +37,12 @@ MAX_MENFESS_PER_USER_PER_DAY = 3
 MENFESS_SIGNATURE = "yuji!"
 
 X_MAX_IMAGE_ATTACHMENTS = 4
+
+ALLOWED_IMAGE_EXTS = ["jpeg", "jpg", "png", "webp"]
+
+ALLOWED_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
+
+MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
 
 
 @st.dialog("Status")
@@ -57,6 +64,32 @@ def can_create_menfess_today(user_id) -> bool:
         user_id=user_id, created_at__date=today
     ).count()
     return today_menfess_count < MAX_MENFESS_PER_USER_PER_DAY
+
+
+def has_invalid_image(images: list[UploadedFile]) -> bool:
+    for image in images:
+        if image.size > MAX_IMAGE_SIZE_BYTES:
+            return True
+
+        _, image_ext = os.path.splitext(image.name)
+        image_ext = image_ext[1:]
+
+        if image_ext not in ALLOWED_IMAGE_EXTS:
+            return True
+
+        image.seek(0)
+
+        kind = filetype.guess(image)
+
+        if (
+            kind is None
+            or kind.extension not in ALLOWED_IMAGE_EXTS
+            or kind.mime != image.type
+            or image.type not in ALLOWED_IMAGE_MIME_TYPES
+        ):
+            return True
+
+    return False
 
 
 def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
@@ -124,6 +157,12 @@ def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
                 )
                 return
 
+            if has_invalid_image(images):
+                show_menfess_creation_status(
+                    "error", "Image-nya ada yang ga valid. Coba cek lagi!"
+                )
+                return
+
             if has_inappropriate_image(images):
                 show_menfess_creation_status(
                     "error", "Ga boleh ada adult, racy, atau gory images ya!"
@@ -185,7 +224,7 @@ def main_page():
     text = menfess_submission_form.text_area("Ketikin menfess lo di sini:")
     images = menfess_submission_form.file_uploader(
         f"Lo juga bisa upload images (max {X_MAX_IMAGE_ATTACHMENTS}):",
-        type=["jpg", "jpeg", "png"],
+        type=ALLOWED_IMAGE_EXTS,
         accept_multiple_files=True,
     )
 

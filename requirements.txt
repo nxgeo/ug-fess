@@ -3,6 +3,7 @@ beautifulsoup4
 dj-database-url
 Django
 emoji
+filetype
 google-generativeai
 psycopg[binary]
 python-twitter-v2
