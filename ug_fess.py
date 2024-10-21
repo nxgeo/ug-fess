@@ -11,7 +11,6 @@ from django.conf import settings
 from django.utils import timezone
 import filetype
 import streamlit as st
-from streamlit.components.v1 import html
 from streamlit.delta_generator import DeltaGenerator
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
@@ -21,7 +20,7 @@ from content_moderation import (
     has_inappropriate_content,
     has_inappropriate_image,
 )
-from x import create_tweet, get_tweet_oembed_html, upload_images
+from x import create_tweet, upload_images
 
 
 if not settings.configured or not apps.ready:
@@ -38,27 +37,22 @@ MENFESS_SIGNATURE = "yuji!"
 
 X_MAX_IMAGE_ATTACHMENTS = 4
 
+MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+
 ALLOWED_IMAGE_EXTS = ["jpeg", "jpg", "png", "webp"]
 
 ALLOWED_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
-MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
-
 
 @st.dialog("Status")
-def show_menfess_creation_status(
-    status_type: str, message: str, tweet_id: str | None = None
-) -> None:
+def show_menfess_creation_status(status_type: str, message: str) -> None:
     if status_type == "success":
         st.success(message)
-
-        if tweet_id:
-            html(get_tweet_oembed_html(tweet_id), height=390, scrolling=True)
     elif status_type == "error":
         st.error(message)
 
 
-def can_create_menfess_today(user_id) -> bool:
+def can_create_menfess_today(user_id: int) -> bool:
     today = timezone.localdate()
     today_menfess_count = Menfess.objects.filter(
         user_id=user_id, created_at__date=today
@@ -92,7 +86,7 @@ def has_invalid_image(images: list[UploadedFile]) -> bool:
     return False
 
 
-def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
+def sign_in(username: str, password: str, error_placeholder: DeltaGenerator) -> None:
     try:
         if authenticate(username, password):
             user = User.objects.get_or_create(username=username)[0]
@@ -116,7 +110,7 @@ def sign_in(username: str, password: str, error_placeholder: DeltaGenerator):
         )
 
 
-def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
+def tweet_menfess(text: str | None, images: list[UploadedFile] | None) -> None:
     try:
         if not can_create_menfess_today(st.session_state.user_id):
             show_menfess_creation_status(
@@ -183,7 +177,7 @@ def tweet_menfess(text: str | None, images: list[UploadedFile] | None):
         Menfess.objects.create(tweet_id=tweet.id, user_id=st.session_state.user_id)
 
         show_menfess_creation_status(
-            "success", "Yay! Menfess lo udah di-tweet :smiley:", tweet.id
+            "success", "Yay! Menfess lo udah di-tweet :smiley:"
         )
     except Exception:
         show_menfess_creation_status(

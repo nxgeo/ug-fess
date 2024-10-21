@@ -5,7 +5,6 @@ from unicodedata import normalize
 from emoji import analyze, EmojiMatch
 from pytwitter import Api
 from pytwitter.models import Tweet
-from requests import get
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 
@@ -156,31 +155,3 @@ def create_tweet(
         return x_api.create_tweet(text=text, media_media_ids=media_ids)
     else:
         return create_thread(text, media_ids)
-
-
-OEMBED_RESOURCE_URL = "https://publish.twitter.com/oembed"
-
-STATUS_BASE_URL = "https://x.com/ug_fess/status/"
-
-
-def get_tweet_oembed_html(tweet_id: str) -> str:
-    tweet_url = STATUS_BASE_URL + tweet_id
-
-    params = {
-        "url": tweet_url,
-        "hide_media": "true",
-        "hide_thread": "true",
-        "align": "center",
-        "theme": "dark",
-        "dnt": "true",
-    }
-
-    headers = {"Accept": "application/json"}
-
-    try:
-        response = get(OEMBED_RESOURCE_URL, params, headers=headers)
-        oembed_data = response.json()
-    except Exception:
-        return ""
-
-    return oembed_data.get("html", "")
