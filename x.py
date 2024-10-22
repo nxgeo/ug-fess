@@ -151,7 +151,7 @@ def create_tweet(
 ) -> Tweet | list[Tweet]:
     weighted_tweet_length = calculate_weighted_tweet_length(text)
 
-    if weighted_tweet_length <= MAX_WEIGHTED_TWEET_LENGTH:
-        return x_api.create_tweet(text=text, media_media_ids=media_ids)
-    else:
+    if weighted_tweet_length > MAX_WEIGHTED_TWEET_LENGTH:
         return create_thread(text, media_ids)
+
+    return x_api.create_tweet(text=text, media_media_ids=media_ids)
