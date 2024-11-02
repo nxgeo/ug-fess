@@ -2,43 +2,34 @@ from bs4 import BeautifulSoup
 from requests import Session
 
 
-SIGN_IN_URL = "https://studentsite.gunadarma.ac.id/index.php/site/login"
-SIGNED_IN_URL = "https://studentsite.gunadarma.ac.id/index.php/default/index"
+SIGN_IN_URL = "https://v-class.gunadarma.ac.id/login/index.php"
 
 
-def fetch_captcha(session: Session) -> tuple[int, int] | None:
+def fetch_login_token(session: Session) -> str | None:
     try:
         resp = session.get(SIGN_IN_URL)
         soup = BeautifulSoup(resp.text, "html.parser")
-        captcha1 = soup.find("input", {"type": "hidden", "name": "captcha1"})["value"]
-        captcha2 = soup.find("input", {"type": "hidden", "name": "captcha2"})["value"]
+        login_token = soup.find("input", {"name": "logintoken"})["value"]
     except TypeError:
         return None
 
-    return int(captcha1), int(captcha2)
+    return login_token
 
 
 def authenticate(username: str, password: str) -> bool:
+    email = username.strip() + "@student.gunadarma.ac.id"
+
     session = Session()
 
-    if (captcha := fetch_captcha(session)) is None:
-        raise Exception("Captcha missing")
-
-    captcha1, captcha2 = captcha
-    captcha = captcha1 + captcha2  # Solve captcha
+    if (login_token := fetch_login_token(session)) is None:
+        raise Exception("Login token missing")
 
     resp = session.post(
         SIGN_IN_URL,
-        {
-            "username": username,
-            "password": password,
-            "captcha1": captcha1,
-            "captcha2": captcha2,
-            "captcha": captcha,
-        },
+        {"username": email, "password": password, "logintoken": login_token},
         allow_redirects=False,
     )
 
     session.close()
 
-    return resp.is_redirect and resp.headers["location"] == SIGNED_IN_URL
+    return "MoodleSession" in resp.cookies
