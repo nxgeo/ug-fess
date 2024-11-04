@@ -170,11 +170,21 @@ def create_tweet(
 
 OEMBED_RESOURCE_URL = "https://publish.twitter.com/oembed"
 
+AUTHOR_URL = "https://twitter.com/ug_fess"
+
 
 def is_valid_tweet_url(tweet_url: str) -> bool:
-    response = requests.get(OEMBED_RESOURCE_URL, {"url": tweet_url})
-    if response.status_code == 200:
-        return True
+    response = requests.get(
+        OEMBED_RESOURCE_URL,
+        {"url": tweet_url},
+        headers={"Accept": "application/json"},
+    )
+
     if response.status_code == 404:
         return False
+
     response.raise_for_status()
+
+    oembed_data = response.json()
+
+    return oembed_data["author_url"] == AUTHOR_URL
