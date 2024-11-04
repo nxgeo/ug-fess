@@ -5,6 +5,7 @@ from unicodedata import normalize
 from emoji import analyze, EmojiMatch
 from pytwitter import Api
 from pytwitter.models import Tweet
+import requests
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 
@@ -165,3 +166,15 @@ def create_tweet(
     return x_api.create_tweet(
         text=text, media_media_ids=media_ids, quote_tweet_id=quote_tweet_id
     )
+
+
+OEMBED_RESOURCE_URL = "https://publish.twitter.com/oembed"
+
+
+def is_valid_tweet_url(tweet_url: str) -> bool:
+    response = requests.get(OEMBED_RESOURCE_URL, {"url": tweet_url})
+    if response.status_code == 200:
+        return True
+    if response.status_code == 404:
+        return False
+    response.raise_for_status()

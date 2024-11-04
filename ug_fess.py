@@ -21,7 +21,7 @@ from content_moderation import (
     has_inappropriate_content,
     has_inappropriate_image,
 )
-from x import create_tweet, upload_images
+from x import create_tweet, is_valid_tweet_url, upload_images
 
 
 if not settings.configured or not apps.ready:
@@ -135,14 +135,14 @@ def tweet_menfess(
 
             qrt_match = re.search(r"https://x\.com/ug_fess/status/(\d+)", qrt)
 
-            if qrt_match:
-                qrt = qrt_match.group(1)
-            else:
+            if qrt_match is None or not is_valid_tweet_url(qrt):
                 show_menfess_creation_status(
                     "error",
                     "QRT-nya ga valid nih. Pastiin lo QRT tweet dari @ug_fess ya!",
                 )
                 return
+
+            qrt = qrt_match.group(1)
 
         if text:
             if MENFESS_SIGNATURE in text.lower():
