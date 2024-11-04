@@ -125,7 +125,9 @@ def upload_images(images: list[UploadedFile]) -> list[str]:
 
 
 def create_thread(
-    text: str | None = None, media_ids: list[str] | None = None
+    text: str | None = None,
+    media_ids: list[str] | None = None,
+    quote_tweet_id: str | None = None,
 ) -> list[Tweet]:
     texts = threadify_tweet(text)
     tweets = []
@@ -135,6 +137,7 @@ def create_thread(
         tweet = x_api.create_tweet(
             text=text,
             media_media_ids=media_ids,
+            quote_tweet_id=quote_tweet_id,
             reply_in_reply_to_tweet_id=in_reply_to_tweet_id,
         )
         tweets.append(tweet)
@@ -143,15 +146,22 @@ def create_thread(
         if media_ids:
             media_ids = None
 
+        if quote_tweet_id:
+            quote_tweet_id = None
+
     return tweets
 
 
 def create_tweet(
-    text: str | None = None, media_ids: list[str] | None = None
+    text: str | None = None,
+    media_ids: list[str] | None = None,
+    quote_tweet_id: str | None = None,
 ) -> Tweet | list[Tweet]:
     weighted_tweet_length = calculate_weighted_tweet_length(text)
 
     if weighted_tweet_length > MAX_WEIGHTED_TWEET_LENGTH:
-        return create_thread(text, media_ids)
+        return create_thread(text, media_ids, quote_tweet_id)
 
-    return x_api.create_tweet(text=text, media_media_ids=media_ids)
+    return x_api.create_tweet(
+        text=text, media_media_ids=media_ids, quote_tweet_id=quote_tweet_id
+    )

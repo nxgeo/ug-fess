@@ -4,6 +4,7 @@ sys.dont_write_bytecode = True
 
 
 import os
+import re
 
 import django
 from django.apps import apps
@@ -42,6 +43,8 @@ MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
 ALLOWED_IMAGE_EXTS = ["jpeg", "jpg", "png", "webp"]
 
 ALLOWED_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
+
+MAX_QRT_URL_LENGTH = 49
 
 
 @st.dialog("Status")
@@ -110,7 +113,9 @@ def sign_in(username: str, password: str, error_placeholder: DeltaGenerator) -> 
         )
 
 
-def tweet_menfess(text: str | None, images: list[UploadedFile] | None) -> None:
+def tweet_menfess(
+    text: str | None, images: list[UploadedFile] | None, qrt: str | None
+) -> None:
     try:
         if not can_create_menfess_today(st.session_state.user_id):
             show_menfess_creation_status(
@@ -119,6 +124,25 @@ def tweet_menfess(text: str | None, images: list[UploadedFile] | None) -> None:
                 "per hari. Coba lagi besok :smiley:",
             )
             return
+
+        if qrt:
+            if len(qrt) > MAX_QRT_URL_LENGTH:
+                show_menfess_creation_status(
+                    "error",
+                    f"QRT-nya ga valid nih, maks {MAX_QRT_URL_LENGTH} karakter aja ya!",
+                )
+                return
+
+            qrt_match = re.search(r"https://x\.com/ug_fess/status/(\d+)", qrt)
+
+            if qrt_match:
+                qrt = qrt_match.group(1)
+            else:
+                show_menfess_creation_status(
+                    "error",
+                    "QRT-nya ga valid nih. Pastiin lo QRT tweet dari @ug_fess ya!",
+                )
+                return
 
         if text:
             if MENFESS_SIGNATURE in text.lower():
@@ -167,7 +191,7 @@ def tweet_menfess(text: str | None, images: list[UploadedFile] | None) -> None:
         else:
             media_ids = None
 
-        tweet_or_tweets = create_tweet(text, media_ids)
+        tweet_or_tweets = create_tweet(text, media_ids, qrt)
 
         if isinstance(tweet_or_tweets, list):
             tweet = tweet_or_tweets[0]
@@ -221,10 +245,15 @@ def main_page():
         type=ALLOWED_IMAGE_EXTS,
         accept_multiple_files=True,
     )
+    qrt = menfess_submission_form.text_input(
+        "QRT (opsional):",
+        max_chars=MAX_QRT_URL_LENGTH,
+        placeholder="https://x.com/ug_fess/status/1845753430381662319",
+    )
 
     if menfess_submission_form.form_submit_button():
         if text or images:
-            tweet_menfess(text, images)
+            tweet_menfess(text, images, qrt)
 
     st.divider()
 
