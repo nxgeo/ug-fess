@@ -248,7 +248,7 @@ def main_page():
     qrt = menfess_submission_form.text_input(
         "QRT (opsional):",
         max_chars=MAX_QRT_URL_LENGTH,
-        placeholder="https://x.com/ug_fess/status/1845753430381662319",
+        help="Contoh: https://x.com/ug_fess/status/1845753430381662319",
     )
 
     if menfess_submission_form.form_submit_button():
