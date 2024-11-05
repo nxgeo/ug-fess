@@ -114,9 +114,7 @@ def sign_in(username: str, password: str, error_placeholder: DeltaGenerator) -> 
         )
 
 
-def tweet_menfess(
-    text: str | None, images: list[UploadedFile] | None, qrt: str | None
-) -> None:
+def tweet_menfess(text: str, images: list[UploadedFile], qrt: str) -> None:
     try:
         if not can_create_menfess_today(st.session_state.user_id):
             show_menfess_creation_status(
@@ -251,7 +249,6 @@ def main_page():
     )
     qrt = menfess_submission_form.text_input(
         "QRT (opsional):",
-        value=None,
         max_chars=MAX_QRT_URL_LENGTH,
         help="Contoh: https[]()://x.com/ug_fess/status/1845753430381662319",
     )
