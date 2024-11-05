@@ -125,6 +125,8 @@ def tweet_menfess(
             )
             return
 
+        qrt_id = None
+
         if qrt:
             if len(qrt) > MAX_QRT_URL_LENGTH:
                 show_menfess_creation_status(
@@ -142,7 +144,7 @@ def tweet_menfess(
                 )
                 return
 
-            qrt = qrt_match.group(1)
+            qrt_id = qrt_match.group(1)
 
         if text:
             if MENFESS_SIGNATURE in text.lower():
@@ -191,7 +193,7 @@ def tweet_menfess(
         else:
             media_ids = None
 
-        tweet_or_tweets = create_tweet(text, media_ids, qrt)
+        tweet_or_tweets = create_tweet(text, media_ids, qrt_id)
 
         if isinstance(tweet_or_tweets, list):
             tweet = tweet_or_tweets[0]
