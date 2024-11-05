@@ -107,7 +107,8 @@ def sign_in(username: str, password: str, error_placeholder: DeltaGenerator) -> 
             error_placeholder.error(
                 "Username atau password yang lo masukin salah nih. Coba cek lagi ya!"
             )
-    except Exception:
+    except Exception as e:
+        print(e)
         error_placeholder.error(
             "Sign in lagi bermasalah nih :disappointed:. Coba lagi nanti ya!"
         )
@@ -124,8 +125,6 @@ def tweet_menfess(
                 "per hari. Coba lagi besok :smiley:",
             )
             return
-
-        qrt_id = None
 
         if qrt:
             if len(qrt) > MAX_QRT_URL_LENGTH:
@@ -145,6 +144,8 @@ def tweet_menfess(
                 return
 
             qrt_id = qrt_match.group(1)
+        else:
+            qrt_id = None
 
         if text:
             if MENFESS_SIGNATURE in text.lower():
@@ -205,7 +206,8 @@ def tweet_menfess(
         show_menfess_creation_status(
             "success", "Yay! Menfess lo udah di-tweet :smiley:"
         )
-    except Exception:
+    except Exception as e:
+        print(e)
         show_menfess_creation_status(
             "error",
             "Lagi ga bisa kirim menfess nih :disappointed:. Coba lagi nanti ya!",
@@ -249,6 +251,7 @@ def main_page():
     )
     qrt = menfess_submission_form.text_input(
         "QRT (opsional):",
+        value=None,
         max_chars=MAX_QRT_URL_LENGTH,
         help="Contoh: https[]()://x.com/ug_fess/status/1845753430381662319",
     )
