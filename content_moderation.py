@@ -23,7 +23,7 @@ def has_inappropriate_content(text: str) -> bool:
         max_output_tokens=1,
         temperature=0,
         top_p=0.95,
-        top_k=64,
+        top_k=40,
         response_mime_type="text/x.enum",
         response_schema={
             "type": "STRING",
