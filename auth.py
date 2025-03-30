@@ -2,14 +2,14 @@ from bs4 import BeautifulSoup
 from requests import Session
 
 
-SIGN_IN_URL = "https://v-class.gunadarma.ac.id/login/index.php"
+SIGN_IN_URL = "https://lsp.gunadarma.ac.id/asesmen/login/"
 
 
 def fetch_login_token(session: Session) -> str | None:
     try:
         resp = session.get(SIGN_IN_URL)
         soup = BeautifulSoup(resp.text, "html.parser")
-        login_token = soup.find("input", {"name": "logintoken"})["value"]
+        login_token = soup.find("input", {"name": "csrfmiddlewaretoken"})["value"]
     except TypeError:
         return None
 
@@ -17,8 +17,6 @@ def fetch_login_token(session: Session) -> str | None:
 
 
 def authenticate(username: str, password: str) -> bool:
-    email = username.strip() + "@student.gunadarma.ac.id"
-
     session = Session()
 
     if (login_token := fetch_login_token(session)) is None:
@@ -26,10 +24,9 @@ def authenticate(username: str, password: str) -> bool:
 
     resp = session.post(
         SIGN_IN_URL,
-        {"username": email, "password": password, "logintoken": login_token},
-        allow_redirects=False,
+        {"username": username, "password": password, "csrfmiddlewaretoken": login_token},
     )
 
     session.close()
 
-    return "MoodleSession" in resp.cookies
+    return "Data Asesi" in resp.text
