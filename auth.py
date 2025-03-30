@@ -25,6 +25,7 @@ def authenticate(username: str, password: str) -> bool:
     resp = session.post(
         SIGN_IN_URL,
         {"username": username, "password": password, "csrfmiddlewaretoken": login_token},
+        headers={"Referer": SIGN_IN_URL},
     )
 
     session.close()
