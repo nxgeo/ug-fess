@@ -21,7 +21,12 @@ from content_moderation import (
     has_inappropriate_content,
     has_inappropriate_image,
 )
-from x import create_tweet, is_valid_tweet_url, upload_images
+from ifttt import queue_tweet, upload_image
+from tweet_utils import (
+    MAX_WEIGHTED_TWEET_LENGTH,
+    calculate_weighted_tweet_length,
+    is_valid_tweet_url,
+)
 
 
 if not settings.configured or not apps.ready:
@@ -35,8 +40,6 @@ from db.models import Menfess, User
 MAX_MENFESS_PER_USER_PER_DAY = 3
 
 MENFESS_SIGNATURE = "yuji!"
-
-X_MAX_IMAGE_ATTACHMENTS = 4
 
 MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
 
@@ -141,10 +144,6 @@ def tweet_menfess(text: str, images: list[UploadedFile], qrt: str) -> None:
                 )
                 return
 
-            qrt_id = qrt_match.group(1)
-        else:
-            qrt_id = None
-
         if text:
             if MENFESS_SIGNATURE in text.lower():
                 show_menfess_creation_status(
@@ -169,13 +168,9 @@ def tweet_menfess(text: str, images: list[UploadedFile], qrt: str) -> None:
 
             text = f"{MENFESS_SIGNATURE} {text}"
 
-        if images:
-            if len(images) > X_MAX_IMAGE_ATTACHMENTS:
-                show_menfess_creation_status(
-                    "error", f"Max {X_MAX_IMAGE_ATTACHMENTS} images aja ya!"
-                )
-                return
+        image_url = None
 
+        if images:
             if has_invalid_image(images):
                 show_menfess_creation_status(
                     "error", "Image-nya ada yang ga valid. Coba cek lagi!"
@@ -188,21 +183,28 @@ def tweet_menfess(text: str, images: list[UploadedFile], qrt: str) -> None:
                 )
                 return
 
-            media_ids = upload_images(images)
-        else:
-            media_ids = None
+            image_url = upload_image(images[0])
 
-        tweet_or_tweets = create_tweet(text, media_ids, qrt_id)
+        final_text = text
+        if qrt:
+            final_text = f"{final_text} {qrt}" if final_text else qrt
 
-        if isinstance(tweet_or_tweets, list):
-            tweet = tweet_or_tweets[0]
-        else:
-            tweet = tweet_or_tweets
+        if calculate_weighted_tweet_length(final_text) > MAX_WEIGHTED_TWEET_LENGTH:
+            show_menfess_creation_status(
+                "error", f"Menfess-nya ga boleh lebih dari {MAX_WEIGHTED_TWEET_LENGTH} karakter ya!"
+            )
+            return
 
-        Menfess.objects.create(tweet_id=tweet.id, user_id=st.session_state.user_id)
+        queue_tweet(final_text, image_url)
+
+        from uuid import uuid4
+
+        Menfess.objects.create(
+            tweet_id=uuid4().hex[:20], user_id=st.session_state.user_id
+        )
 
         show_menfess_creation_status(
-            "success", "Yay! Menfess lo udah di-tweet :smiley:"
+            "success", "Yay! Menfess lo udah masuk antrian :smiley:"
         )
     except Exception as e:
         print(e)
@@ -242,10 +244,9 @@ def main_page():
         "menfess_submission_form", clear_on_submit=True, enter_to_submit=False
     )
     text = menfess_submission_form.text_area("Ketikin menfess lo di sini:")
-    images = menfess_submission_form.file_uploader(
-        f"Lo juga bisa upload images (max {X_MAX_IMAGE_ATTACHMENTS}):",
+    image = menfess_submission_form.file_uploader(
+        "Lo juga bisa upload image (opsional):",
         type=ALLOWED_IMAGE_EXTS,
-        accept_multiple_files=True,
     )
     qrt = menfess_submission_form.text_input(
         "QRT (opsional):",
@@ -254,6 +255,7 @@ def main_page():
     )
 
     if menfess_submission_form.form_submit_button():
+        images = [image] if image else []
         if text or images:
             tweet_menfess(text, images, qrt)
 

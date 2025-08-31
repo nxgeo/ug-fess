@@ -6,7 +6,6 @@ emoji
 filetype
 google-generativeai
 psycopg[binary]
-python-twitter-v2
 requests
 streamlit
 urlextract
