@@ -3,6 +3,8 @@ from os import environ
 import requests
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
+IMGCDN_API_KEY = environ["IMGCDN_API_KEY"]
+
 IFTTT_EVENT_NAME = environ["IFTTT_EVENT_NAME"]
 IFTTT_WEBHOOK_KEY = environ["IFTTT_WEBHOOK_KEY"]
 IFTTT_WEBHOOK_URL = (
@@ -13,13 +15,13 @@ IFTTT_WEBHOOK_URL = (
 def upload_image(image: UploadedFile) -> str:
     image.seek(0)
     response = requests.post(
-        "https://0x0.st",
-        files={"file": (image.name, image, image.type)},
-        headers={"User-Agent": "ugfess/1.0"},
+        "https://imgcdn.dev/api/1/upload",
+        files={"source": (image.name, image, image.type)},
+        data={"key": IMGCDN_API_KEY},
         timeout=30,
     )
     response.raise_for_status()
-    return response.text.strip()
+    return response.json()["image"]["url"]
 
 
 def queue_tweet(text: str, image_url: str | None = None) -> None:
