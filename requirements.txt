@@ -1,12 +1,6 @@
-azure-cognitiveservices-vision-computervision
 beautifulsoup4
-dj-database-url
-Django
 emoji
 filetype
-google-generativeai
-psycopg[binary]
-python-twitter-v2
 requests
 streamlit
 urlextract
