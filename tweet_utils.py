@@ -48,6 +48,7 @@ def is_valid_tweet_url(tweet_url: str) -> bool:
         OEMBED_RESOURCE_URL,
         {"url": tweet_url},
         headers={"Accept": "application/json"},
+        timeout=30,
     )
 
     if response.status_code == 404:

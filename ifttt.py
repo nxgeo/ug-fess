@@ -16,6 +16,7 @@ def upload_image(image: UploadedFile) -> str:
         "https://0x0.st",
         files={"file": (image.name, image, image.type)},
         headers={"User-Agent": "ugfess/1.0"},
+        timeout=30,
     )
     response.raise_for_status()
     return response.text.strip()
