@@ -160,7 +160,8 @@ def sign_in_form():
 
     if st.button("Sign in"):
         if username and password:
-            sign_in(username, password, error_placeholder)
+            with st.spinner("Lagi ngecek kredensial lo...", show_time=True):
+                sign_in(username, password, error_placeholder)
 
 
 def main_page():
@@ -178,9 +179,10 @@ def main_page():
         help="Contoh: https[]()://x.com/ug_fess/status/1845753430381662319",
     )
 
-    if menfess_submission_form.form_submit_button():
+    if menfess_submission_form.form_submit_button("Send"):
         if text or image:
-            tweet_menfess(text, image, qrt)
+            with st.spinner("Lagi ngirim menfess lo...", show_time=True):
+                tweet_menfess(text, image, qrt)
 
     st.divider()
 
