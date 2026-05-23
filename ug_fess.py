@@ -181,7 +181,9 @@ def main_page():
 
     if menfess_submission_form.form_submit_button("Send"):
         if text or image:
-            with st.spinner("Lagi ngirim menfess lo...", show_time=True):
+            with menfess_submission_form.spinner(
+                "Lagi ngirim menfess lo...", show_time=True
+            ):
                 tweet_menfess(text, image, qrt)
 
     st.divider()
