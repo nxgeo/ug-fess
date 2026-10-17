@@ -8,3 +8,7 @@ maxUploadSize = 5
 
 [browser]
 gatherUsageStats = false
+
+[theme]
+base = "dark"
+primaryColor = "#983dc9"
